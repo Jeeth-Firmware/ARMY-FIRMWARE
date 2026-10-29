@@ -1,0 +1,27 @@
+[Unit]
+Description=Device Provisioning Web UI
+After=local-fs.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+EnvironmentFile=/home/pi/facial-tracker-firmware/.env
+WorkingDirectory=/home/pi/facial-tracker-firmware
+
+ExecStart=/home/pi/facial-tracker-firmware/venv/bin/python \
+          /home/pi/facial-tracker-firmware/provisioning_ui.py
+
+Restart=on-failure
+RestartSec=5
+
+# Lower priority than facial tracking (Nice=-5)
+Nice=10
+CPUWeight=25
+MemoryMax=60M
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

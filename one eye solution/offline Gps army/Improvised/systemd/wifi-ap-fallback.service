@@ -1,0 +1,25 @@
+[Unit]
+Description=WiFi AP Fallback Mode - Start AP if no known networks available
+After=network-online.target NetworkManager.service
+Wants=network-online.target
+# Give WiFi interface time to initialize
+After=sys-subsystem-net-devices-wlan0.device
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+# Wait for WiFi interface to be ready before starting
+ExecStartPre=/bin/sleep 5
+ExecStart=/usr/bin/python3 /home/pi/facial-tracker-firmware/wifi_ap_manager.py check
+ExecStop=/usr/bin/python3 /home/pi/facial-tracker-firmware/wifi_ap_manager.py stop-ap
+User=root
+WorkingDirectory=/home/pi/facial-tracker-firmware
+Environment=PYTHONUNBUFFERED=1
+StandardOutput=journal
+StandardError=journal
+# Restart on failure
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

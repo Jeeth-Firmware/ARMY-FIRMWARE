@@ -1,0 +1,37 @@
+[Unit]
+Description=OTA Auto-Update Daemon - Versioned bundle update system
+After=network-online.target ota-startup.service
+Wants=network-online.target ota-startup.service
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+
+WorkingDirectory=/home/pi/facial-tracker-firmware
+
+# OTA daemon: avoid .env dependency
+Environment=PYTHONUNBUFFERED=1
+Environment=DB_PATH=/home/pi/facial-tracker-firmware/data/blinksmart.db
+
+ExecStart=/home/pi/facial-tracker-firmware/venv/bin/python \
+          /home/pi/facial-tracker-firmware/ota/ota_updater.py daemon
+
+Restart=on-failure
+RestartSec=60
+
+# Lowest priority - OTA only needs to run occasionally
+Nice=19
+CPUWeight=5
+IOSchedulingClass=idle
+IOSchedulingPriority=7
+MemoryMax=40M
+
+StandardOutput=journal
+StandardError=journal
+
+# Watchdog only if code supports sd_notify
+# WatchdogSec=300
+
+[Install]
+WantedBy=multi-user.target

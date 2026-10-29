@@ -1,0 +1,21 @@
+# Credentials
+.env
+driver_app.json
+
+# Python
+__pycache__/
+*.pyc
+venv/
+
+# Runtime data
+data/
+logs/
+uploads/
+backups/
+releases/
+images/
+current
+
+# OS / editor
+.DS_Store
+*.swp

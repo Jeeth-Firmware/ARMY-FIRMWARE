@@ -1,0 +1,45 @@
+{
+  "api_base_url": "https://api.copilotai.click",
+  "check_interval_hours": 6,
+  "maintenance_window_start": "02:00",
+  "maintenance_window_end": "05:00",
+  "auto_update_enabled": true,
+  "auto_rollback_enabled": true,
+  "max_download_retries": 3,
+  "health_check_timeout": 30,
+  "services": [
+    "facial1.service",
+    "get_gps_data1.service"
+  ],
+  "update_priorities": {
+    "critical": {
+      "apply_immediately": true,
+      "requires_approval": false
+    },
+    "high": {
+      "apply_immediately": false,
+      "apply_on_boot": true,
+      "requires_approval": false
+    },
+    "normal": {
+      "apply_immediately": false,
+      "apply_in_maintenance_window": true,
+      "requires_approval": false
+    },
+    "low": {
+      "apply_immediately": false,
+      "apply_in_maintenance_window": true,
+      "requires_approval": true
+    }
+  },
+  "rollback_settings": {
+    "max_rollback_attempts": 3,
+    "health_check_retries": 2,
+    "health_check_delay_seconds": 5
+  },
+  "bandwidth_settings": {
+    "max_concurrent_downloads": 1,
+    "download_speed_limit_kbps": 0,
+    "prefer_wifi": true
+  }
+}

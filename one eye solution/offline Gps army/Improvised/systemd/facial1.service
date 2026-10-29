@@ -1,0 +1,83 @@
+[Unit]
+Description=Driver Sleeping Alarm
+After=local-fs.target
+# If facial1 crashes 5 times in 3 minutes, reboot the Pi
+StartLimitIntervalSec=180
+StartLimitBurst=5
+StartLimitAction=reboot
+
+[Service]
+Type=notify
+User=pi
+Group=pi
+
+WorkingDirectory=/home/pi/facial-tracker-firmware
+
+# systemd watchdog: if main loop hangs for 30s, kill and restart
+WatchdogSec=30
+
+Environment=PYTHONUNBUFFERED=1
+Environment="PYTHONPATH=/home/pi/facial-tracker-firmware"
+
+# Performance settings for Pi Zero 2W
+Environment=HEADLESS=1
+Environment=FRAME_W=640
+Environment=FRAME_H=480
+Environment=REFINE_LANDMARKS=1
+Environment=TARGET_DETECTION_FPS=10
+Environment=CAMERA_FPS=15
+Environment=MIN_DETECTION_CONFIDENCE=0.5
+Environment=MIN_TRACKING_CONFIDENCE=0.5
+
+# Phone-call detection (time-based; alert delay / buzz / ear distance come from Settings DB)
+Environment=PHONE_DETECTION_ENABLED=1
+Environment=HANDS_SCAN_INTERVAL=0.4
+Environment=PHONE_RELEASE_SECONDS=1.0
+
+# Optimize Python for production (disable assertions, optimize bytecode)
+Environment="PYTHONOPTIMIZE=2"
+
+# Prevent matplotlib (mediapipe dependency) from heavy GUI backend init
+Environment="MPLBACKEND=Agg"
+
+# Limit OpenCV threads to avoid contention on 4-core ARM
+Environment="OPENBLAS_NUM_THREADS=2"
+Environment="OMP_NUM_THREADS=2"
+
+# Limit MediaPipe/TFLite to 2 threads
+Environment="TF_NUM_INTRAOP_THREADS=2"
+Environment="TF_NUM_INTEROP_THREADS=1"
+
+# SQLite database path
+Environment="DB_PATH=/home/pi/facial-tracker-firmware/data/blinksmart.db"
+
+ExecStart=/home/pi/facial-tracker-firmware/venv/bin/python \
+          /home/pi/facial-tracker-firmware/facil_event_capture.py
+
+# On any stop (crash, OOM, watchdog kill): force buzzer + LED OFF
+ExecStopPost=/home/pi/facial-tracker-firmware/setup/gpio_cleanup.sh
+
+Restart=always
+RestartSec=5
+
+# Set process scheduling priority (lower nice = higher priority)
+# HIGHEST priority — this is the safety-critical service
+Nice=-10
+
+# Highest I/O priority — swap page-ins happen faster than other services
+IOSchedulingClass=realtime
+IOSchedulingPriority=0
+
+# Give facial detection maximum CPU share when competing with other services
+CPUWeight=10000
+
+# Memory: with MySQL/Redis gone, we have more headroom
+# Total RAM ~440MB, OS ~45MB, GPS ~15MB -> ~380MB available
+MemoryMax=320M
+MemoryHigh=280M
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

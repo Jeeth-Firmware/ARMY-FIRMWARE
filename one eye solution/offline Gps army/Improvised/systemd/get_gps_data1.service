@@ -1,0 +1,39 @@
+[Unit]
+Description=Get GPS Location
+After=local-fs.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+
+# GPS config
+Environment=GPS_DEBUG_LOG_RAW=0
+Environment=GPS_FORCE_GPSD=0
+Environment=GPS_LOCATION_SPEED_ENABLED=1
+Environment=GPS_LOCATION_SPEED_MIN_INTERVAL=3.0
+Environment=GPS_LOCATION_SPEED_STATIONARY_METERS=0.3
+Environment="DB_PATH=/home/pi/facial-tracker-firmware/data/blinksmart.db"
+
+# OTA-safe paths
+Environment=PYTHONPATH=/home/pi/facial-tracker-firmware
+WorkingDirectory=/home/pi/facial-tracker-firmware
+
+ExecStart=/home/pi/facial-tracker-firmware/venv/bin/python \
+          /home/pi/facial-tracker-firmware/get_gps_data.py
+
+Restart=always
+RestartSec=3
+
+# Lower priority than facial tracking — needed for speed data but must not block I/O
+Nice=5
+CPUWeight=30
+IOSchedulingClass=idle
+IOSchedulingPriority=7
+MemoryMax=30M
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

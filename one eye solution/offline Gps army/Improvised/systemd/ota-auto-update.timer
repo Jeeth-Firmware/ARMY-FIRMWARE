@@ -1,0 +1,19 @@
+[Unit]
+Description=OTA Update Check Timer - Periodic update checks
+Documentation=man:systemd.timer(5)
+
+[Timer]
+# Run 5 minutes after boot
+OnBootSec=5min
+
+# Then run every 6 hours
+OnUnitActiveSec=6h
+
+# Add randomized delay to prevent all devices checking at once
+RandomizedDelaySec=30min
+
+# Persist timer across reboots
+Persistent=true
+
+[Install]
+WantedBy=timers.target

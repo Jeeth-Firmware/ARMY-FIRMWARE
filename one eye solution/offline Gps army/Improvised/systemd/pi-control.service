@@ -1,0 +1,34 @@
+[Unit]
+Description=Pi Device Control Service - MQTT remote management
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+
+WorkingDirectory=/home/pi/facial-tracker-firmware
+
+# Load MQTT credentials from .env if present
+EnvironmentFile=-/home/pi/facial-tracker-firmware/.env
+Environment=PYTHONUNBUFFERED=1
+Environment=DB_PATH=/home/pi/facial-tracker-firmware/data/blinksmart.db
+
+ExecStart=/home/pi/facial-tracker-firmware/venv/bin/python \
+          /home/pi/facial-tracker-firmware/pi_control_service.py
+
+Restart=on-failure
+RestartSec=30
+
+# Low priority - control service is not performance-critical
+Nice=15
+CPUWeight=10
+MemoryMax=50M
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=pi-control
+
+[Install]
+WantedBy=multi-user.target

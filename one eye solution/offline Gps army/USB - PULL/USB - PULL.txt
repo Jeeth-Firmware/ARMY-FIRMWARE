@@ -1,0 +1,133 @@
+# Army Offline Firmware – USB Export Setup Guide
+
+## Purpose
+
+This guide explains how to enable USB export functionality for the updated Army Offline Firmware.
+
+---
+
+# Step 1: Prepare the USB Drive
+
+Insert a USB drive or an SD card (using a USB card reader) into your Windows PC.
+
+Open **PowerShell** and create an empty file named **BLINKSMART_EXPORT** in the root of the USB drive.
+
+### Option 1
+
+```powershell
+New-Item -Path E:\BLINKSMART_EXPORT -ItemType File
+```
+
+### Option 2
+
+```powershell
+"" | Out-File -FilePath E:\BLINKSMART_EXPORT -NoNewline
+```
+
+If the file already exists, overwrite it using:
+
+```powershell
+New-Item -Path E:\BLINKSMART_EXPORT -ItemType File -Force
+```
+
+> **Note:** Replace `E:` with your USB drive letter if it is different.
+
+---
+
+# Step 2: Verify the USB
+
+Run:
+
+```powershell
+Get-ChildItem E:\
+```
+
+Expected output:
+
+```text
+Directory: E:\
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        ...                         0      BLINKSMART_EXPORT
+```
+
+Verify that:
+
+* The file name is exactly `BLINKSMART_EXPORT`
+* The file has **no extension**
+* The file size is **0 bytes**
+* The file is located in the **root** of the USB drive
+
+---
+
+# Step 3: Connect to the Raspberry Pi
+
+SSH into the Raspberry Pi.
+
+Navigate to the firmware directory:
+
+```bash
+cd /home/pi/facial-tracker-firmware
+```
+
+(Or navigate to your deployed firmware directory if it is different.)
+
+---
+
+# Step 4: Install USB Export Service
+
+Run:
+
+```bash
+sudo bash setup/install-usb-export.sh
+```
+
+This installs:
+
+* USB detection (udev) rules
+* USB export systemd service
+* Automatic export functionality when a prepared USB drive is inserted
+
+---
+
+# Step 5: Verify Installation
+
+### Check if the udev rule is installed
+
+```bash
+ls /etc/udev/rules.d/99-blinksmart-usb-export.rules
+```
+
+### Check if the systemd service is installed
+
+```bash
+systemctl cat 'blinksmart-usb-export@.service'
+```
+
+---
+
+# Step 6: Monitor Automatic USB Export
+
+To watch the service in real time whenever a prepared USB drive is connected, run:
+
+```bash
+journalctl -u 'blinksmart-usb-export@*' -f
+```
+
+Insert the prepared USB drive.
+
+If everything is configured correctly, the service will automatically detect the USB containing the `BLINKSMART_EXPORT` marker file and start the export process.
+
+---
+
+# Summary
+
+1. Prepare the USB by creating an empty file named `BLINKSMART_EXPORT` in the root directory.
+2. Verify the file exists and is 0 bytes.
+3. SSH into the Raspberry Pi.
+4. Navigate to the firmware directory.
+5. Run `sudo bash setup/install-usb-export.sh`.
+6. Verify the installation.
+7. Monitor the logs using `journalctl`.
+8. Insert the prepared USB drive to trigger automatic export.

@@ -1,0 +1,28 @@
+# Core detection pipeline
+opencv-python-headless
+mediapipe
+numpy
+
+# GPIO
+gpiozero
+RPi.GPIO
+
+# GPS
+pyserial
+pynmea2
+geopy
+gps3
+
+# Networking & API
+requests
+paho-mqtt
+msgpack
+flask
+
+# MediaPipe dependency pin (prevents bloated newer versions)
+protobuf==3.20.*
+
+# REMOVED: mysql-connector-python (replaced by SQLite — built-in, no package needed)
+# REMOVED: redis (replaced by shared memory IPC via gps_shm.py)
+# REMOVED: firebase_admin (legacy, massive dependency chain — saves ~40-60MB RAM)
+# REMOVED: pygame (not used in headless mode)

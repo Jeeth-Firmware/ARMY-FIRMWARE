@@ -1,0 +1,7 @@
+# Blinksmart / GPS Army — start offline export when a USB filesystem partition appears.
+# Only partitions with a filesystem are matched. The export script itself requires
+# a BLINKSMART_EXPORT marker file at the volume root before copying anything.
+#
+# Kernel name (%k) becomes the systemd instance (e.g. sda1 → blinksmart-usb-export@sda1).
+
+ACTION=="add", SUBSYSTEM=="block", KERNEL=="sd[a-z][0-9]*", ENV{ID_FS_USAGE}=="filesystem", TAG+="systemd", ENV{SYSTEMD_WANTS}="blinksmart-usb-export@%k.service"

@@ -1,0 +1,44 @@
+[Unit]
+Description=Blinksmart offline USB export (%i)
+# Fired by udev when a USB partition appears (e.g. sda1)
+After=local-fs.target
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+# Root required to mount the stick; vfat mount uses uid/gid=1000 for pi-owned files
+User=root
+Group=root
+
+Environment="DB_PATH=/home/pi/facial-tracker-firmware/data/blinksmart.db"
+Environment="EVENTS_DIR=/home/pi/facial-tracker-firmware/images/events"
+Environment="USB_EXPORT_MOUNT_POINT=/mnt/blinksmart-usb"
+Environment="USB_EXPORT_MARKER=BLINKSMART_EXPORT"
+Environment="USB_EXPORT_DELETE_EVENTS=1"
+Environment="PYTHONPATH=/home/pi/facial-tracker-firmware"
+WorkingDirectory=/home/pi/facial-tracker-firmware
+
+# Brief settle time after udev add (kernel + partition scan)
+ExecStartPre=/bin/sleep 2
+ExecStart=/home/pi/facial-tracker-firmware/venv/bin/python \
+          /home/pi/facial-tracker-firmware/usb_export.py \
+          --device /dev/%i
+
+# Low priority — must not starve facial / GPS writers.
+# Not IOSchedulingClass=idle: with detection + GPS writing the SD card constantly,
+# idle-class reads were starved and large exports never finished.
+Nice=15
+CPUWeight=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+
+# Large backlogs (1000+ events). Progress is kept in batches, so a timeout only
+# stops the run; re-inserting the stick continues with the remaining events.
+TimeoutStartSec=4h
+MemoryMax=120M
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
